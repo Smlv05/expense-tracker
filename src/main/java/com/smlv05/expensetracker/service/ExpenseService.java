@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.EnumMap;
+import java.util.Map;
 
 public class ExpenseService {
     private final List<Expense> expenses = new ArrayList<>();
@@ -97,5 +99,18 @@ public class ExpenseService {
             }
         }
         return total;
+    }
+
+    public Map<Category, BigDecimal> getTotalsByCategory() {
+        Map<Category, BigDecimal> totals = new EnumMap<>(Category.class);
+        for (Category category : Category.values()) {
+            totals.put(category, BigDecimal.ZERO);
+        }
+
+        for (Expense expense : expenses) {
+            Category category = expense.getCategory();
+            totals.put(category, totals.get(category).add(expense.getAmount()));
+        }
+        return totals;
     }
 }

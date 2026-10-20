@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -306,5 +307,59 @@ class ExpenseServiceTest {
     @ValueSource(ints = {0, 13, -1})
     void totalForMonthWithInvalidMonthThrows(int month) {
         assertThrows(IllegalArgumentException.class, () -> service.getTotalForMonth(2026, month));
+    }
+
+    @Test
+    void totalsByCategorySumsExpensesOfSameCategory() {
+        service.addExpense(new BigDecimal("0.10"), Category.FOOD, DATE, "");
+        service.addExpense(new BigDecimal("0.20"), Category.FOOD, DATE, "");
+
+        Map<Category, BigDecimal> totals = service.getTotalsByCategory();
+
+        assertEquals(new BigDecimal("0.30"), totals.get(Category.FOOD));
+    }
+
+    @Test
+    void totalsByCategoryKeepsCategoriesSeparate() {
+        service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+        service.addExpense(new BigDecimal("1500"), Category.RENT, DATE, "");
+        service.addExpense(new BigDecimal("5"), Category.FOOD, DATE, "");
+
+        Map<Category, BigDecimal> totals = service.getTotalsByCategory();
+
+        assertEquals(new BigDecimal("15"), totals.get(Category.FOOD));
+        assertEquals(new BigDecimal("1500"), totals.get(Category.RENT));
+        assertEquals(BigDecimal.ZERO, totals.get(Category.TRANSPORT));
+    }
+
+    @Test
+    void totalsByCategoryWithNoExpensesHasAllCategoriesWithZero() {
+        Map<Category, BigDecimal> totals = service.getTotalsByCategory();
+
+        assertEquals(Category.values().length, totals.size());
+        for (Category category : Category.values()) {
+            assertEquals(BigDecimal.ZERO, totals.get(category));
+        }
+    }
+
+    @Test
+    void totalsByCategoryChangeAfterDelete() {
+        service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+        Expense second = service.addExpense(new BigDecimal("20"), Category.FOOD, DATE, "");
+
+        service.deleteExpense(second.getId());
+
+        assertEquals(new BigDecimal("10"), service.getTotalsByCategory().get(Category.FOOD));
+    }
+
+    @Test
+    void totalsByCategoryChangeAfterCategoryIsEdited() {
+        Expense expense = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+
+        service.updateExpense(expense.getId(), new BigDecimal("10"), Category.RENT, DATE, "");
+
+        Map<Category, BigDecimal> totals = service.getTotalsByCategory();
+        assertEquals(BigDecimal.ZERO, totals.get(Category.FOOD));
+        assertEquals(new BigDecimal("10"), totals.get(Category.RENT));
     }
 }
