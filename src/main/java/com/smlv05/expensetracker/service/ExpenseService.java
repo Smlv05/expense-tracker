@@ -32,11 +32,7 @@ public class ExpenseService {
     }
 
     public Expense addExpense(BigDecimal amount, Category category, LocalDate date, String description) {
-        validateAmount(amount);
-        validateDate(date);
-        if (category == null) {
-            throw new IllegalArgumentException("Category is required");
-        }
+        validate(amount, category, date);
         if (description == null) {
             description = "";
         }
@@ -45,6 +41,19 @@ public class ExpenseService {
         nextId++;
         expenses.add(expense);
         return expense;
+    }
+
+    public void updateExpense(int id, BigDecimal amount, Category category, LocalDate date, String description) {
+        Expense expense = findById(id);
+        validate(amount, category, date);
+        if (description == null) {
+            description = "";
+        }
+
+        expense.setAmount(amount);
+        expense.setCategory(category);
+        expense.setDate(date);
+        expense.setDescription(description);
     }
 
     public List<Expense> getAllExpenses() {
@@ -58,12 +67,20 @@ public class ExpenseService {
         expenses.remove(expense);
     }
 
-    private Expense findById(int id) {
+    public Expense findById(int id) {
         for (Expense expense : expenses) {
             if (expense.getId() == id) {
                 return expense;
             }
         }
         throw new IllegalArgumentException("Expense with id " + id + " not found");
+    }
+
+    private void validate(BigDecimal amount, Category category, LocalDate date) {
+        validateAmount(amount);
+        validateDate(date);
+        if (category == null) {
+            throw new IllegalArgumentException("Category is required");
+        }
     }
 }

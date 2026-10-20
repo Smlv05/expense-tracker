@@ -192,4 +192,68 @@ class ExpenseServiceTest {
 
         assertEquals(3, newExpense.getId());
     }
+
+    @Test
+    void updateExpenseChangesAllFields() {
+        Expense expense = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "old");
+
+        service.updateExpense(expense.getId(), new BigDecimal("25.50"), Category.RENT, DATE.minusDays(5), "new");
+
+        Expense updated = service.findById(expense.getId());
+        assertEquals(new BigDecimal("25.50"), updated.getAmount());
+        assertEquals(Category.RENT, updated.getCategory());
+        assertEquals(DATE.minusDays(5), updated.getDate());
+        assertEquals("new", updated.getDescription());
+    }
+
+    @Test
+    void updateExpenseKeepsId() {
+        Expense expense = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+
+        service.updateExpense(expense.getId(), new BigDecimal("20"), Category.RENT, DATE, "");
+
+        assertEquals(1, service.getAllExpenses().size());
+        assertEquals(expense.getId(), service.getAllExpenses().get(0).getId());
+    }
+
+    @Test
+    void updateExpenseWithUnknownIdThrows() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateExpense(99, new BigDecimal("10"), Category.FOOD, DATE, ""));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-5", "10.123"})
+    void updateExpenseWithInvalidAmountThrows(String amount) {
+        Expense expense = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateExpense(expense.getId(), new BigDecimal(amount), Category.FOOD, DATE, ""));
+    }
+
+    @Test
+    void failedUpdateDoesNotChangeExpense() {
+        Expense expense = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "lunch");
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateExpense(expense.getId(), new BigDecimal("99"), Category.RENT, tomorrow, "changed"));
+
+        assertEquals(new BigDecimal("10"), expense.getAmount());
+        assertEquals(Category.FOOD, expense.getCategory());
+        assertEquals(DATE, expense.getDate());
+        assertEquals("lunch", expense.getDescription());
+    }
+
+    @Test
+    void updateDateChangesOrder() {
+        Expense first = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+        Expense second = service.addExpense(new BigDecimal("20"), Category.FOOD, DATE.plusDays(1), "");
+
+        service.updateExpense(first.getId(), new BigDecimal("10"), Category.FOOD, DATE.plusDays(2), "");
+
+        List<Expense> expenses = service.getAllExpenses();
+        assertEquals(second.getId(), expenses.get(0).getId());
+        assertEquals(first.getId(), expenses.get(1).getId());
+    }
 }
