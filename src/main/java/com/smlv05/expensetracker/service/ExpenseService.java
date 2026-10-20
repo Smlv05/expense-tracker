@@ -52,4 +52,18 @@ public class ExpenseService {
         sorted.sort(Comparator.comparing(Expense::getDate));
         return sorted;
     }
+
+    public void deleteExpense(int id) {
+        Expense expense = findById(id);
+        expenses.remove(expense);
+    }
+
+    private Expense findById(int id) {
+        for (Expense expense : expenses) {
+            if (expense.getId() == id) {
+                return expense;
+            }
+        }
+        throw new IllegalArgumentException("Expense with id " + id + " not found");
+    }
 }

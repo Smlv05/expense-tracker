@@ -137,4 +137,59 @@ class ExpenseServiceTest {
 
         assertTrue(service.getAllExpenses().isEmpty());
     }
+
+    @Test
+    void deleteExpenseRemovesIt() {
+        Expense expense = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+
+        service.deleteExpense(expense.getId());
+
+        assertTrue(service.getAllExpenses().isEmpty());
+    }
+
+    @Test
+    void deleteExpenseKeepsOtherExpenses() {
+        Expense first = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+        Expense second = service.addExpense(new BigDecimal("20"), Category.RENT, DATE.plusDays(1), "");
+        Expense third = service.addExpense(new BigDecimal("30"), Category.OTHER, DATE.plusDays(2), "");
+
+        service.deleteExpense(second.getId());
+
+        List<Expense> expenses = service.getAllExpenses();
+        assertEquals(2, expenses.size());
+        assertEquals(first.getId(), expenses.get(0).getId());
+        assertEquals(third.getId(), expenses.get(1).getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, 99})
+    void deleteExpenseWithUnknownIdThrows(int id) {
+        service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+
+        assertThrows(IllegalArgumentException.class, () -> service.deleteExpense(id));
+    }
+
+    @Test
+    void deleteExpenseFromEmptyServiceThrows() {
+        assertThrows(IllegalArgumentException.class, () -> service.deleteExpense(1));
+    }
+
+    @Test
+    void deleteSameExpenseTwiceThrows() {
+        Expense expense = service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+        service.deleteExpense(expense.getId());
+
+        assertThrows(IllegalArgumentException.class, () -> service.deleteExpense(expense.getId()));
+    }
+
+    @Test
+    void newExpenseAfterDeleteGetsNextId() {
+        service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "");
+        service.addExpense(new BigDecimal("20"), Category.FOOD, DATE, "");
+        service.deleteExpense(1);
+
+        Expense newExpense = service.addExpense(new BigDecimal("30"), Category.FOOD, DATE, "");
+
+        assertEquals(3, newExpense.getId());
+    }
 }
