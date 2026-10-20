@@ -27,6 +27,7 @@ public class ConsoleMenu {
             switch (choice) {
                 case "1" -> addExpense();
                 case "2" -> showAllExpenses();
+                case "3" -> deleteExpense();
                 case "0" -> {
                     System.out.println("Bye!");
                     return;
@@ -41,6 +42,7 @@ public class ConsoleMenu {
         System.out.println("=== Expense Tracker ===");
         System.out.println("1. Add expense");
         System.out.println("2. Show all expenses");
+        System.out.println("3. Delete expense");
         System.out.println("0. Exit");
         System.out.print("Choose option: ");
     }
@@ -93,6 +95,19 @@ public class ConsoleMenu {
             System.out.printf("%-4d %-12s %-15s %12.2f  %s%n",
                     expense.getId(), expense.getDate(), expense.getCategory(),
                     expense.getAmount(), expense.getDescription());
+        }
+    }
+
+    private void deleteExpense() {
+        try {
+            System.out.print("Expense ID: ");
+            int id = Integer.parseInt(scanner.nextLine().trim());
+            service.deleteExpense(id);
+            System.out.println("Expense deleted");
+        } catch (NumberFormatException e) {
+            System.out.println("ID must be a whole number");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
     }
 }
