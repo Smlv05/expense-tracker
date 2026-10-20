@@ -11,13 +11,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Map;
+import com.smlv05.expensetracker.storage.CsvStorage;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 public class ConsoleMenu {
     private final ExpenseService service;
+    private final CsvStorage storage;
+    private final Path file;
     private final Scanner scanner = new Scanner(System.in);
 
-    public ConsoleMenu(ExpenseService service) {
+    public ConsoleMenu(ExpenseService service, CsvStorage storage, Path file) {
         this.service = service;
+        this.storage = storage;
+        this.file = file;
     }
 
     public void run() {
@@ -32,6 +40,8 @@ public class ConsoleMenu {
                 case "4" -> editExpense();
                 case "5" -> showTotalForMonth();
                 case "6" -> showTotalsByCategory();
+                case "7" -> saveToFile();
+                case "8" -> loadFromFile();
                 case "0" -> {
                     System.out.println("Bye!");
                     return;
@@ -50,6 +60,8 @@ public class ConsoleMenu {
         System.out.println("4. Edit expense");
         System.out.println("5. Total for month");
         System.out.println("6. Totals by category");
+        System.out.println("7. Save to file");
+        System.out.println("8. Load from file");
         System.out.println("0. Exit");
         System.out.print("Choose option: ");
     }
@@ -171,6 +183,24 @@ public class ConsoleMenu {
         Map<Category, BigDecimal> totals = service.getTotalsByCategory();
         for (Category category : Category.values()) {
             System.out.printf("%-15s %12.2f%n", category, totals.get(category));
+        }
+    }
+
+    private void saveToFile() {
+        try {
+            storage.save(service.getAllExpenses(), file);
+            System.out.println("Saved to " + file);
+        } catch (IOException e) {
+            System.out.println("Could not save file: " + e.getMessage());
+        }
+    }
+
+    private void loadFromFile() {
+        try {
+            int count = service.loadExpenses(storage.load(file));
+            System.out.println("Loaded " + count + " expenses from " + file);
+        } catch (IOException e) {
+            System.out.println("Could not read file: " + e.getMessage());
         }
     }
 }

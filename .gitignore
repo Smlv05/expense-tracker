@@ -30,3 +30,6 @@ out/
 # OS
 .DS_Store
 Thumbs.db
+
+# App data
+expenses.csv
