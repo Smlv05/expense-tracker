@@ -10,6 +10,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Map;
 
 public class ConsoleMenu {
     private final ExpenseService service;
@@ -30,6 +31,7 @@ public class ConsoleMenu {
                 case "3" -> deleteExpense();
                 case "4" -> editExpense();
                 case "5" -> showTotalForMonth();
+                case "6" -> showTotalsByCategory();
                 case "0" -> {
                     System.out.println("Bye!");
                     return;
@@ -47,6 +49,7 @@ public class ConsoleMenu {
         System.out.println("3. Delete expense");
         System.out.println("4. Edit expense");
         System.out.println("5. Total for month");
+        System.out.println("6. Totals by category");
         System.out.println("0. Exit");
         System.out.print("Choose option: ");
     }
@@ -161,6 +164,13 @@ public class ConsoleMenu {
             System.out.println("Year and month must be whole numbers");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    private void showTotalsByCategory() {
+        Map<Category, BigDecimal> totals = service.getTotalsByCategory();
+        for (Category category : Category.values()) {
+            System.out.printf("%-15s %12.2f%n", category, totals.get(category));
         }
     }
 }
