@@ -6,7 +6,7 @@ Bugs I found while I was testing my app.
 
 ## BUG-01: App crashes when input is closed (Ctrl+Z) in main menu
 
-**Status:** Open
+**Status:** Fixed in commit 73caa44
 **Severity:** Major
 **Priority:** Low
 
@@ -24,6 +24,8 @@ All expenses that were not saved to the file are lost.
 **Notes:** `scanner.nextLine()` in `ConsoleMenu.run` is called without checking if there is
 more input. `NoSuchElementException` is not caught anywhere.
 
+**Fix:** `NoSuchElementException` is now caught in `ConsoleMenu.run`, so the app prints
+"Input closed. Bye!" and exits without crashing.
 ---
 
 ## BUG-02: Amount is checked only after all fields are entered
