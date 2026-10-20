@@ -64,6 +64,21 @@ public class ExpenseService {
         return sorted;
     }
 
+    public int loadExpenses(List<Expense> loaded) {
+        expenses.clear();
+        nextId = 1;
+        for (Expense expense : loaded) {
+            try {
+                validate(expense.getAmount(), expense.getCategory(), expense.getDate());
+                expenses.add(expense);
+                nextId = Math.max(nextId, expense.getId() + 1);
+            } catch (IllegalArgumentException e) {
+                // skip expenses that break the rules, for example a negative amount in the file
+            }
+        }
+        return expenses.size();
+    }
+
     public void deleteExpense(int id) {
         Expense expense = findById(id);
         expenses.remove(expense);
@@ -113,4 +128,6 @@ public class ExpenseService {
         }
         return totals;
     }
+
+
 }

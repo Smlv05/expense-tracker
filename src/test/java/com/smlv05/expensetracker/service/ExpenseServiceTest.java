@@ -362,4 +362,40 @@ class ExpenseServiceTest {
         assertEquals(BigDecimal.ZERO, totals.get(Category.FOOD));
         assertEquals(new BigDecimal("10"), totals.get(Category.RENT));
     }
+
+    @Test
+    void loadExpensesSetsNextIdAfterMaxId() {
+        List<Expense> loaded = List.of(
+                new Expense(2, new BigDecimal("10"), Category.FOOD, DATE, ""),
+                new Expense(7, new BigDecimal("20"), Category.FOOD, DATE, ""),
+                new Expense(4, new BigDecimal("30"), Category.FOOD, DATE, ""));
+
+        service.loadExpenses(loaded);
+        Expense added = service.addExpense(new BigDecimal("5"), Category.OTHER, DATE, "");
+
+        assertEquals(8, added.getId());
+    }
+
+    @Test
+    void loadExpensesReplacesCurrentExpenses() {
+        service.addExpense(new BigDecimal("10"), Category.FOOD, DATE, "old");
+
+        service.loadExpenses(List.of(new Expense(5, new BigDecimal("20"), Category.RENT, DATE, "loaded")));
+
+        List<Expense> expenses = service.getAllExpenses();
+        assertEquals(1, expenses.size());
+        assertEquals(5, expenses.get(0).getId());
+    }
+
+    @Test
+    void loadExpensesSkipsInvalidExpenses() {
+        List<Expense> loaded = List.of(
+                new Expense(1, new BigDecimal("-5"), Category.FOOD, DATE, ""),
+                new Expense(2, new BigDecimal("10"), Category.FOOD, DATE, ""));
+
+        int count = service.loadExpenses(loaded);
+
+        assertEquals(1, count);
+        assertEquals(2, service.getAllExpenses().get(0).getId());
+    }
 }
