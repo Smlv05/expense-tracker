@@ -83,4 +83,19 @@ public class ExpenseService {
             throw new IllegalArgumentException("Category is required");
         }
     }
+
+    public BigDecimal getTotalForMonth(int year, int month) {
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (Expense expense : expenses) {
+            LocalDate date = expense.getDate();
+            if (date.getYear() == year && date.getMonthValue() == month) {
+                total = total.add(expense.getAmount());
+            }
+        }
+        return total;
+    }
 }

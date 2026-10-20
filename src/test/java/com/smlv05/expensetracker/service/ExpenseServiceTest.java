@@ -256,4 +256,55 @@ class ExpenseServiceTest {
         assertEquals(second.getId(), expenses.get(0).getId());
         assertEquals(first.getId(), expenses.get(1).getId());
     }
+
+    @Test
+    void totalForMonthSumsExpensesInThatMonth() {
+        service.addExpense(new BigDecimal("0.10"), Category.FOOD, LocalDate.of(2026, 9, 5), "");
+        service.addExpense(new BigDecimal("0.20"), Category.FOOD, LocalDate.of(2026, 9, 20), "");
+
+        assertEquals(new BigDecimal("0.30"), service.getTotalForMonth(2026, 9));
+    }
+
+    @Test
+    void totalForMonthWithNoExpensesIsZero() {
+        assertEquals(BigDecimal.ZERO, service.getTotalForMonth(2026, 9));
+    }
+
+    @Test
+    void totalForMonthIncludesFirstAndLastDay() {
+        service.addExpense(new BigDecimal("10"), Category.FOOD, LocalDate.of(2026, 9, 1), "");
+        service.addExpense(new BigDecimal("20"), Category.FOOD, LocalDate.of(2026, 9, 30), "");
+
+        assertEquals(new BigDecimal("30"), service.getTotalForMonth(2026, 9));
+    }
+
+    @Test
+    void totalForMonthIgnoresNeighbourMonths() {
+        service.addExpense(new BigDecimal("5"), Category.FOOD, LocalDate.of(2026, 8, 31), "");
+        service.addExpense(new BigDecimal("10"), Category.FOOD, LocalDate.of(2026, 9, 15), "");
+        service.addExpense(new BigDecimal("7"), Category.FOOD, LocalDate.of(2026, 10, 1), "");
+
+        assertEquals(new BigDecimal("10"), service.getTotalForMonth(2026, 9));
+    }
+
+    @Test
+    void totalForMonthIgnoresSameMonthOfOtherYear() {
+        service.addExpense(new BigDecimal("50"), Category.FOOD, LocalDate.of(2025, 9, 10), "");
+        service.addExpense(new BigDecimal("10"), Category.FOOD, LocalDate.of(2026, 9, 10), "");
+
+        assertEquals(new BigDecimal("10"), service.getTotalForMonth(2026, 9));
+    }
+
+    @Test
+    void totalForMonthIncludesLeapDay() {
+        service.addExpense(new BigDecimal("15"), Category.FOOD, LocalDate.of(2024, 2, 29), "");
+
+        assertEquals(new BigDecimal("15"), service.getTotalForMonth(2024, 2));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 13, -1})
+    void totalForMonthWithInvalidMonthThrows(int month) {
+        assertThrows(IllegalArgumentException.class, () -> service.getTotalForMonth(2026, month));
+    }
 }
