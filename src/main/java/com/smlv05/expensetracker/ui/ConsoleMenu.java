@@ -29,6 +29,7 @@ public class ConsoleMenu {
                 case "2" -> showAllExpenses();
                 case "3" -> deleteExpense();
                 case "4" -> editExpense();
+                case "5" -> showTotalForMonth();
                 case "0" -> {
                     System.out.println("Bye!");
                     return;
@@ -45,6 +46,7 @@ public class ConsoleMenu {
         System.out.println("2. Show all expenses");
         System.out.println("3. Delete expense");
         System.out.println("4. Edit expense");
+        System.out.println("5. Total for month");
         System.out.println("0. Exit");
         System.out.print("Choose option: ");
     }
@@ -141,6 +143,22 @@ public class ConsoleMenu {
             System.out.println("Please enter a valid number");
         } catch (DateTimeParseException e) {
             System.out.println("Date must be in format YYYY-MM-DD, for example 2026-10-20");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void showTotalForMonth() {
+        try {
+            System.out.print("Year: ");
+            int year = Integer.parseInt(scanner.nextLine().trim());
+            System.out.print("Month (1-12): ");
+            int month = Integer.parseInt(scanner.nextLine().trim());
+
+            BigDecimal total = service.getTotalForMonth(year, month);
+            System.out.printf("Total for %d-%02d: %.2f%n", year, month, total);
+        } catch (NumberFormatException e) {
+            System.out.println("Year and month must be whole numbers");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
