@@ -13,21 +13,29 @@ public class ExpenseService {
     private final List<Expense> expenses = new ArrayList<>();
     private int nextId = 1;
 
-    public Expense addExpense(BigDecimal amount, Category category, LocalDate date, String description) {
+    public void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than 0");
         }
         if (amount.stripTrailingZeros().scale() > 2) {
             throw new IllegalArgumentException("Amount can have at most 2 decimal places");
         }
-        if (category == null) {
-            throw new IllegalArgumentException("Category is required");
-        }
+    }
+
+    public void validateDate(LocalDate date) {
         if (date == null) {
             throw new IllegalArgumentException("Date is required");
         }
         if (date.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Date cannot be in the future");
+        }
+    }
+
+    public Expense addExpense(BigDecimal amount, Category category, LocalDate date, String description) {
+        validateAmount(amount);
+        validateDate(date);
+        if (category == null) {
+            throw new IllegalArgumentException("Category is required");
         }
         if (description == null) {
             description = "";
