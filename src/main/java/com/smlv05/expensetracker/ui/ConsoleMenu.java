@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Map;
 import com.smlv05.expensetracker.storage.CsvStorage;
+import java.util.NoSuchElementException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,25 +30,30 @@ public class ConsoleMenu {
     }
 
     public void run() {
-        while (true) {
-            printMenu();
-            String choice = scanner.nextLine().trim();
+        try {
+            while (true) {
+                printMenu();
+                String choice = scanner.nextLine().trim();
 
-            switch (choice) {
-                case "1" -> addExpense();
-                case "2" -> showAllExpenses();
-                case "3" -> deleteExpense();
-                case "4" -> editExpense();
-                case "5" -> showTotalForMonth();
-                case "6" -> showTotalsByCategory();
-                case "7" -> saveToFile();
-                case "8" -> loadFromFile();
-                case "0" -> {
-                    System.out.println("Bye!");
-                    return;
+                switch (choice) {
+                    case "1" -> addExpense();
+                    case "2" -> showAllExpenses();
+                    case "3" -> deleteExpense();
+                    case "4" -> editExpense();
+                    case "5" -> showTotalForMonth();
+                    case "6" -> showTotalsByCategory();
+                    case "7" -> saveToFile();
+                    case "8" -> loadFromFile();
+                    case "0" -> {
+                        System.out.println("Bye!");
+                        return;
+                    }
+                    default -> System.out.println("Unknown option, try again");
                 }
-                default -> System.out.println("Unknown option, try again");
             }
+        } catch (NoSuchElementException e) {
+            System.out.println();
+            System.out.println("Input closed. Bye!");
         }
     }
 
