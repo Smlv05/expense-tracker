@@ -28,6 +28,7 @@ public class ConsoleMenu {
                 case "1" -> addExpense();
                 case "2" -> showAllExpenses();
                 case "3" -> deleteExpense();
+                case "4" -> editExpense();
                 case "0" -> {
                     System.out.println("Bye!");
                     return;
@@ -43,6 +44,7 @@ public class ConsoleMenu {
         System.out.println("1. Add expense");
         System.out.println("2. Show all expenses");
         System.out.println("3. Delete expense");
+        System.out.println("4. Edit expense");
         System.out.println("0. Exit");
         System.out.print("Choose option: ");
     }
@@ -106,6 +108,39 @@ public class ConsoleMenu {
             System.out.println("Expense deleted");
         } catch (NumberFormatException e) {
             System.out.println("ID must be a whole number");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void editExpense() {
+        try {
+            System.out.print("Expense ID: ");
+            int id = Integer.parseInt(scanner.nextLine().trim());
+            Expense expense = service.findById(id);
+            System.out.println("Current: " + expense.getDate() + " | " + expense.getCategory()
+                    + " | " + expense.getAmount() + " | " + expense.getDescription());
+
+            System.out.print("New amount: ");
+            BigDecimal amount = new BigDecimal(scanner.nextLine().trim());
+            service.validateAmount(amount);
+
+            System.out.print("New category " + Arrays.toString(Category.values()) + ": ");
+            Category category = parseCategory(scanner.nextLine());
+
+            System.out.print("New date (YYYY-MM-DD): ");
+            LocalDate date = LocalDate.parse(scanner.nextLine().trim());
+            service.validateDate(date);
+
+            System.out.print("New description (optional): ");
+            String description = scanner.nextLine().trim();
+
+            service.updateExpense(id, amount, category, date, description);
+            System.out.println("Expense updated");
+        } catch (NumberFormatException e) {
+            System.out.println("Please enter a valid number");
+        } catch (DateTimeParseException e) {
+            System.out.println("Date must be in format YYYY-MM-DD, for example 2026-10-20");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
